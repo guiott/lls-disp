@@ -159,15 +159,11 @@ CVRCONbits.CVR=3;           //if CVRR=1: CVref =? CVR*0.21 @5V VDD
 
 
 //------I2C
-/*
-OpenI2C(MASTER, SLEW_OFF);  //Master I2C, slew rate off per clock=100KHz
-SSPADD=99;                  //100KHz baud clock @ 40MHz
-                            //SSPAD=((Fosc/BitRate)/4)-1=(400/4)-1=99
-PIE1bits.SSPIE=1;           //SSP (I2C events) int enabled
-PIE2bits.BCLIE=1;           //BUS COLLISION int enabled
-IPR1bits.SSPIP=0;           //SSP int = low priority
-IPR2bits.BCLIP=0;           //BUS COLLISION int = low priority
-*/
+
+PIE1bits.SSPIE=1;       //SSP (I2C events) int enabled
+PIE2bits.BCLIE=1;       //BUS COLLISION int enabled
+IPR1bits.SSPIP=0;       //SSP int = low priority
+IPR2bits.BCLIP=0;       //BUS COLLISION int = low priority
 
 //-------Interrupts
 RCONbits.IPEN=1;        //interrupt priority enabled
