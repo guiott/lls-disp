@@ -6,7 +6,7 @@
 /**
 * \mainpage LlsDisplay.c
 * \author    Guido Ottaviani-->guido@guiott.com<--
-* \version 0.0.1
+* \version 0.0.9
 * \date 06/12
 * \details 
 *
@@ -87,7 +87,16 @@ while (1)  // main loop
 /* Functions *****************************************************************/
 void LongCycle(void)
 {/**
- *\brief slow changings
+ *\brief slow changings. Drive the slow and fast blinks and other changings
+  * on display.
+  * The High nibble of the display number to be shown, controls in which  mode
+  * the Low nibble will be displayed:
+  * 0 = steady ON
+  * 1 = OFF
+  * 2 = slow blinking
+  * 3 = fast blinking
+  * 4 = forward segments animation
+  * 5 = backward segments animation
  *
  */
    static unsigned char Blink;
@@ -112,25 +121,52 @@ void LongCycle(void)
    LONG_TIMER0_FLAG=0;
    FAST_BLINK_FLAG = FAST_BLINK_FLAG ^ 1;
 
+   Anim++;
+   if(Anim>=6)
+   {
+       Anim=0;
+   }
+
    for(LP=0; LP<=3; LP++)
    {
         DispMode=DispNum[LP]>>4;
-        if(DispMode==0)
+        switch (DispMode)
         {
-            BlinkFlag[LP] = DISP_OFF;
+            case 0:
+                BlinkFlag[LP] = DISP_ON;
+                break;
+ 
+           case 1: 
+                BlinkFlag[LP] = DISP_OFF;
+                
+                break;
+
+           case 2: 
+                BlinkFlag[LP] = SLOW_BLINK_FLAG;
+                
+                break;
+                
+           case 3: 
+                BlinkFlag[LP] = FAST_BLINK_FLAG;
+
+                break;
+                
+           case 4: 
+                BlinkFlag[LP] = 0X0E;   // forward animation
+                
+                break;
+ 
+           case 5: 
+                BlinkFlag[LP] = 0X0F;   // backward animation
+                
+                break;               
+           
+           default:
+                BlinkFlag[LP] = DISP_ON;
+
+                break;
         }
-        else if(DispMode==2)
-        {
-            BlinkFlag[LP] = SLOW_BLINK_FLAG;
-        }
-        else if(DispMode==3)
-        {
-            BlinkFlag[LP] = FAST_BLINK_FLAG;
-        }
-        else
-        {
-            BlinkFlag[LP] = DISP_ON;
-        }
+
    }
  }
 
@@ -150,23 +186,75 @@ void Cycle()
     switch (TimerStatus)
     {
         case 0: // Left Bar
+          if(BlinkFlag[0]==0X0E)
+          {// forward animation
+            PORTA=DispBar[Anim];
+            BAR_L_ON;
+          }
+          else if(BlinkFlag[0]==0X0F)
+          {// backward animation
+            PORTA=DispBar[6-Anim];
+            BAR_L_ON;
+          }
+          else
+          {
             PORTA=DispBar[DispNum[0]&0X07];
             BAR_L = BlinkFlag[0];
+          }
             break;
 
         case 1: // Left Display
+          if(BlinkFlag[1]==0X0E)
+          {// forward animation
+            PORTA=DispBar[Anim];
+            DISP_L_ON;
+          }
+          else if(BlinkFlag[1]==0X0F)
+          {// backward animation
+            PORTA=DispBar[6-Anim];
+            DISP_L_ON;
+          }
+          else
+          {
             PORTA=DispSeg[DispNum[1]&0X0F];
             DISP_L = BlinkFlag[1];
+          }
             break;
 
         case 2: // Right Display
+          if(BlinkFlag[2]==0X0E)
+          {// forward animation
+            PORTA=DispBar[Anim];
+            DISP_R_ON;
+          }
+          else if(BlinkFlag[2]==0X0F)
+          {// backward animation
+            PORTA=DispBar[6-Anim];
+            DISP_R_ON;
+          }
+          else
+          {
             PORTA=DispSeg[DispNum[2]&0X0F];
             DISP_R = BlinkFlag[2];
+          }
             break;
 
         case 3: // Right Bar
+          if(BlinkFlag[3]==0X0E)
+          {// forward animation
+            PORTA=DispBar[Anim];
+            BAR_R_ON;
+          }
+          else if(BlinkFlag[3]==0X0F)
+          {// backward animation
+            PORTA=DispBar[6-Anim];
+            BAR_R_ON;
+          }
+          else
+          {
             PORTA=DispBar[DispNum[3]&0X07];
             BAR_R = BlinkFlag[3];
+          }
             break;
 
         default:
