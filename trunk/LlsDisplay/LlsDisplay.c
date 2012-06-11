@@ -50,8 +50,6 @@ INTCONbits.GIEL=0;	// disable interrupt low
 
 Settings(); // set ports and peripherals
 
-
-
 // ==== enable interrupts
 INTCONbits.GIEH=1;	// enable interrupt high
 INTCONbits.GIEL=1;	// enable interrupt low
@@ -108,14 +106,6 @@ void LongCycle(void)
    {
        Blink=0;
        SLOW_BLINK_FLAG = SLOW_BLINK_FLAG ^ 1;
-
-
-   // ?????????????????????? debug
-   DispNum[0]++;
-   DispNum[1]++;
-   DispNum[2]++;
-   DispNum[3]++;
-
    }
    
    LONG_TIMER0_FLAG=0;
@@ -193,7 +183,7 @@ void Cycle()
           }
           else if(BlinkFlag[0]==0X0F)
           {// backward animation
-            PORTA=DispBar[6-Anim];
+            PORTA=DispBar[5-Anim];
             BAR_L_ON;
           }
           else
@@ -206,12 +196,12 @@ void Cycle()
         case 1: // Left Display
           if(BlinkFlag[1]==0X0E)
           {// forward animation
-            PORTA=DispBar[Anim];
+            PORTA=DispAnim[Anim];
             DISP_L_ON;
           }
           else if(BlinkFlag[1]==0X0F)
           {// backward animation
-            PORTA=DispBar[6-Anim];
+            PORTA=DispAnim[(6-Anim)%6];
             DISP_L_ON;
           }
           else
@@ -224,12 +214,12 @@ void Cycle()
         case 2: // Right Display
           if(BlinkFlag[2]==0X0E)
           {// forward animation
-            PORTA=DispBar[Anim];
+            PORTA=DispAnim[Anim];
             DISP_R_ON;
           }
           else if(BlinkFlag[2]==0X0F)
           {// backward animation
-            PORTA=DispBar[6-Anim];
+            PORTA=DispAnim[(6-Anim)%6];
             DISP_R_ON;
           }
           else
@@ -247,7 +237,7 @@ void Cycle()
           }
           else if(BlinkFlag[3]==0X0F)
           {// backward animation
-            PORTA=DispBar[6-Anim];
+            PORTA=DispBar[5-Anim];
             BAR_R_ON;
           }
           else
