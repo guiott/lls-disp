@@ -77,7 +77,8 @@ unsigned char BlinkFlag[4];
 const unsigned char DispSeg[16]={0x40,0X4F,0X24,0X06,0X0b,0X12,0X10,0X47,
                                  0X00,0X02,0X01,0X18,0X70,0X0C,0X30,0X31};
 const unsigned char DispBar[8]={0XFF,0XFE,0XFC,0XF8,0XF0,0XE0,0XC0,0X80};
-unsigned char DispNum[4]={0XE7,0XF8,0XE8,0XE7};
+const unsigned char DispAnim[8]={0XFE,0XFD,0XFB,0XF7,0XEF,0XDF,0XBF,0X7F};
+unsigned char DispNum[4]={0X47,0X58,0X48,0X47};
 unsigned int LongTimer=0;
 unsigned char Anim=0;   // Display animation counting
 #define LONG_TIMER 50 // 250 ms @ INT0 = 5 ms
