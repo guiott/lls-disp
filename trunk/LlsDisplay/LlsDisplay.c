@@ -93,8 +93,8 @@ void LongCycle(void)
   * 1 = OFF
   * 2 = slow blinking
   * 3 = fast blinking
-  * 4 = forward segments animation
-  * 5 = backward segments animation
+  * 4 = CW/forward segments animation
+  * 5 = CCW/backward segments animation
  *
  */
    static unsigned char Blink;
@@ -106,6 +106,14 @@ void LongCycle(void)
    {
        Blink=0;
        SLOW_BLINK_FLAG = SLOW_BLINK_FLAG ^ 1;
+       if(BlinkDot==0)
+       {// Make left bar dots blinking as an hearthbeat
+           BlinkDot=1;
+       }
+       else
+       {
+           BlinkDot=0;
+       }
    }
    
    LONG_TIMER0_FLAG=0;
@@ -188,7 +196,9 @@ void Cycle()
           }
           else
           {
-            PORTA=DispBar[DispNum[0]&0X07];
+            PORTA=DispBar[(DispNum[0]&0X07)];
+            LATAbits.LATA5=BlinkDot;
+            LATAbits.LATA6=BlinkDot;
             BAR_L = BlinkFlag[0];
           }
             break;
