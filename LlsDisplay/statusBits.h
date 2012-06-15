@@ -11,7 +11,12 @@
 //----- Status bits
 #pragma config OSC = INTIO67  // internal oscillator 8MHz with RA6 RA7 available
 
-#pragma config WDT = OFF
+#ifdef WATCH_DOG
+    #pragma config WDT = ON
+#else
+    #pragma config WDT = OFF
+#endif
+
 #pragma config LVP = OFF
 #pragma config BOREN = OFF
 

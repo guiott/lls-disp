@@ -159,16 +159,27 @@ CVRCONbits.CVR=3;           //if CVRR=1: CVref =? CVR*0.21 @5V VDD
 
 
 //------I2C
+SSPADD = I2C_ADDR;
+SSPCON1bits.SSPEN = 1;  //Enable I2C on I/O pins
+SSPCON1bits.CKP = 1;    //Release clock
+SSPCON1bits.SSPM = 6;   //I2C Slave mode, 7-bit address
+SSPCON2bits.SEN = 1;    //Clock stretching enabled
 
-PIE1bits.SSPIE=1;       //SSP (I2C events) int enabled
-PIE2bits.BCLIE=1;       //BUS COLLISION int enabled
-IPR1bits.SSPIP=0;       //SSP int = low priority
-IPR2bits.BCLIP=0;       //BUS COLLISION int = low priority
+I2C_POINTER_FLAG = 0;   // reset State 1B
+
+
+// PIE2bits.BCLIE=1;    //BUS COLLISION int enabled
+// IPR2bits.BCLIP=0;    //BUS COLLISION int = low priority
 
 //-------Interrupts
 RCONbits.IPEN=1;        //interrupt priority enabled
+
+PIR1bits.SSPIF = 0;     //Clear MSSP Interrupt flag
+PIE1bits.SSPIE=1;       //SSP (I2C events) int enabled
+IPR1bits.SSPIP=1;       //SSP int = high priority
+
 INTCONbits.TMR0IE=1;    //interrupt on TMR0 overflow enabled
-INTCON2bits.TMR0IP=1;   //TMR0 interrupt high priority
+INTCON2bits.TMR0IP=0;   //TMR0 interrupt low priority
 
 //-------Not used Peripheral Interrupts
 PIE1bits.TMR2IE=0;      //interrupt on TMR2 overflow disabled

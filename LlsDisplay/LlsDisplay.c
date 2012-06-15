@@ -65,6 +65,8 @@ T0CONbits.TMR0ON=1;     //TMR0 on
 TIMER0_FLAG=0;
 TimerStatus=0;
 
+I2C_POINTER_FLAG = 0;   // reset State 1B
+
 while (1)  // main loop
 {
     if(TIMER0_FLAG)
@@ -74,6 +76,7 @@ while (1)  // main loop
 
     if(LONG_TIMER0_FLAG)
     {
+        ClrWdt();
         LongCycle();
     }
 
@@ -114,6 +117,13 @@ void LongCycle(void)
        {
            BlinkDot=0;
        }
+
+    #ifdef DEBUG_MODE
+        DispNum[0]++;
+        DispNum[1]++;
+        DispNum[2]++;
+        DispNum[3]++;
+    #endif
    }
    
    LONG_TIMER0_FLAG=0;
@@ -293,8 +303,22 @@ void InterruptVectorLow (void)
 /*IntServiceRoutine***********************************************************/
 void InterruptHandlerLow (void)
 
-{  
+{
+ if (INTCONbits.TMR0IF)   // timer 0 overflow?
+ {
+    TMR0H = Timer0CountHigh; // byte High
+    TMR0L = Timer0Count;     // byte Low
 
+    TIMER0_FLAG = 1;
+    LongTimer ++;
+    if(LongTimer >= LONG_TIMER)
+    {
+        LongTimer = 0;
+        LONG_TIMER0_FLAG = 1;
+    }
+
+    INTCONbits.TMR0IF = 0;// reset of interrupt flag
+ }
 }   // Low Priority IntServiceRoutine
 /*****************************************************************************/
 
@@ -324,20 +348,156 @@ InterruptVectorHigh (void)
 void InterruptHandlerHigh (void)
 
 {      
- if (INTCONbits.TMR0IF)   // timer 0 overflow?
- {
-    TMR0H = Timer0CountHigh; // byte High
-    TMR0L = Timer0Count;     // byte Low
+/*----This is a porting of assembly code for Microchip AN734-------------------
+ * over the I2C protocol it was added a 24Cxx EEPROM like data exchange mode.
+ * The procedure is executed within the High Priority ISR in order to speed up
+ * the response on I2C bus and avoid interruption, so an high care must be
+ * taken on execution time and on external calls. If there are less strict
+ * requirements the entire procedure can be executed in the main part after
+ * the setting of a flag from the ISR.
+    
+/* SMP CKE D/A -P- -S- R/W U-A B-F
+ * 
+ *  0   0   0   0   1   0   0   1  State 1: I2C write operation,
+ *                                          last byte was an address byte*/
+#define STATE1 0X09
 
-    TIMER0_FLAG = 1;
-    LongTimer ++;
-    if(LongTimer >= LONG_TIMER)
-    {
-        LongTimer = 0;
-        LONG_TIMER0_FLAG = 1;
+/*  0   0   1   0   1   0   0   1  State 2: I2C write operation,
+ *                                          last byte was a data byte*/
+#define STATE2 0X29
+
+/*  0   0   0   0   1   1   0   X  State 3: I2C read operation,
+ *                                          last byte was an address byte*/
+#define STATE3 0X0C
+
+/*  0   0   1   0   1   1   0   0  State 4: I2C read operation,
+ *                                          last byte was a data byte*/
+#define STATE4 0X2C
+
+/*  0   0   1   0   1   X   0   0  State 5: Slave I2C logic reset
+ *                       CKP = 1            by NACK from master*/
+#define STATE5 0X28
+
+#define STATE_MASK 0X2D        // to mask out unimportant bits in SSPSTAT
+#define BF_MASK 0X2C           // to mask out BF bit in SSPSTAT
+#define RW_MASK 0X28           // to mask out R/W bit in SSPSTAT
+#define MAX_TRY 100             // maximum number of retries for transmission
+//----------------------------------------------------------------------------*/
+unsigned char SspstatMsk;
+unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
+
+ if (PIR1bits.SSPIF)   // I2C interrupt?
+ {
+    SspstatMsk=SSPSTAT & STATE_MASK; //mask out unimportant bits
+
+//State 1------------------
+    if(SspstatMsk == STATE1)
+    {/* After State 1 the State Machine goes in State 1B, the next received
+      * byte will be the register pointer*/
+        I2C_POINTER_FLAG = 1;   // go into the State 1B
+        I2cAddr = SSPBUF;  //dummy reading of the buffer to empty it
     }
- 
-    INTCONbits.TMR0IF = 0;// reset of interrupt flag
- }
+
+//State 2------------------
+    else if(SspstatMsk == STATE2)
+    {
+        if(I2C_POINTER_FLAG)
+        {//come from State 1B, the received data is the register pointer
+            I2cRegPtrRx = SSPBUF;
+        }
+        else
+        {//the received data is a valid byte to store
+            I2cRegRx[I2cRegPtrRx] = SSPBUF;
+            I2cRegPtrRx ++;
+        }
+        
+        if(I2cRegPtrRx >= I2C_BUFF_SIZE_RX)
+        {
+            I2cRegPtrRx = I2C_BUFF_SIZE_RX - 1;
+        }
+        I2C_POINTER_FLAG = 0;
+    }
+
+//State 3------------------
+    else if((SspstatMsk & BF_MASK) == STATE3)
+    {//first reading from master after it sends address
+
+        for(i=0; i<MAX_TRY; i++)
+        {//check MAX_TRY times if buffer is empty
+            if(!SSPSTATbits.BF)
+            {//if buffer is empty try to send a byte
+                for(j=0; j<MAX_TRY; j++)
+                {//check MAX_TRY times to avoid collisions
+                    SSPCON1bits.WCOL=0; //reset collision flag
+                    SSPBUF = I2cRegTx[I2cRegPtrTx]; //send requested byte
+                    if(!SSPCON1bits.WCOL)
+                    {/*if no collision, sending was OK, point to the next byte*/
+                        I2cRegPtrTx ++;
+                        if(I2cRegPtrTx >= I2C_BUFF_SIZE_TX)
+                        {
+                            I2cRegPtrTx = I2C_BUFF_SIZE_TX - 1;
+                        }
+                        // insert here an OK flag if needed
+                        goto State3End; //everything's fine. Procedure over
+                    }
+                }
+                // insert here a fault flag if needed
+                goto State3End; //too many collisions. Exit.
+            }
+        }
+
+        State3End:
+        I2C_POINTER_FLAG = 0;
+    }
+
+//State 4------------------
+    else if((!SSPCON1bits.CKP) && (SspstatMsk == STATE4))
+    {//subsequent readings. Usually it does the same as State 3
+
+        for(i=0; i<MAX_TRY; i++)
+        {//check MAX_TRY times if buffer is empty
+            if(!SSPSTATbits.BF)
+            {//if buffer is empty try to send a byte
+                for(j=0; j<MAX_TRY; j++)
+                {//check MAX_TRY times to avoid collisions
+                    SSPCON1bits.WCOL=0; //reset collision flag
+                    SSPBUF = I2cRegTx[I2cRegPtrTx]; //send requested byte
+                    if(!SSPCON1bits.WCOL)
+                    {/*if no collision, sending was OK, point to the next byte*/
+                        I2cRegPtrTx ++;
+                        if(I2cRegPtrTx >= I2C_BUFF_SIZE_TX)
+                        {
+                            I2cRegPtrTx = I2C_BUFF_SIZE_TX - 1;
+                        }
+                        // insert here an OK flag if needed
+                        goto State4End; //everything's fine. Procedure over
+                    }
+                }
+                // insert here a fault flag if needed
+                goto State4End; //too many collisions. Exit.
+            }
+        }
+
+        State4End:
+        I2C_POINTER_FLAG = 0;
+    }
+
+//State 5------------------
+    else if((SspstatMsk & RW_MASK) == STATE5)
+    {//end cycle
+        SSPCON1bits.CKP = 0; //release clock
+        I2C_POINTER_FLAG = 0;
+    }
+
+//Default------------------
+    else
+    {//not in a know state. A different safety action could be performed here
+        SSPCON1bits.CKP = 0; //release clock
+        I2C_POINTER_FLAG = 0;
+    }
+
+    PIR1bits.SSPIF = 0;     //Clear MSSP Interrupt flag
+}
+    
 }   // High Priority IntServiceRoutine
 
