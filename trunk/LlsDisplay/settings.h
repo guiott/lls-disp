@@ -23,4 +23,5 @@
             unsigned bit7:1;
     };
     extern struct Bits VARbits1;
+
 #endif
