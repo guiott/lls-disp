@@ -67,7 +67,7 @@ TimerStatus=0;
 
 I2C_POINTER_FLAG = 0;   // reset State 1B
 
-while (1)  // main loop
+while (1)   // main loop
 {
     if(TIMER0_FLAG)
     {
@@ -80,7 +80,7 @@ while (1)  // main loop
         LongCycle();
     }
 
-}  // main loop
+}           // main loop
 } // main ==========
 
 
@@ -88,7 +88,7 @@ while (1)  // main loop
 /* Functions *****************************************************************/
 void LongCycle(void)
 {/**
- *\brief slow changings. Drive the slow and fast blinks and other changings
+ *\brief slow changings. Drives the slow and fast blinks and other changings
   * on display.
   * The High nibble of the display number to be shown, controls in which  mode
   * the Low nibble will be displayed:
@@ -407,7 +407,7 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
         }
         else
         {//the received data is a valid byte to store
-            I2cRegRx[I2cRegPtrRx] = SSPBUF;
+            DispNum[I2cRegPtrRx] = SSPBUF;
             I2cRegPtrRx ++;
         }
         
@@ -447,6 +447,7 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
         }
         // insert here a fault flag if needed
         // if here the buffer was never empty
+        Nop();
 
         State3End:
         I2C_POINTER_FLAG = 0;
@@ -489,17 +490,18 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
 //State 5------------------
     else if((SspstatMsk & RW_MASK) == STATE5)
     {//end cycle
-        SSPCON1bits.CKP = 0; //release clock
+        SSPCON1bits.CKP = 1; //release clock
         I2C_POINTER_FLAG = 0;
     }
 
 //Default------------------
     else
     {//not in a know state. A different safety action could be performed here
-        SSPCON1bits.CKP = 0; //release clock
+        SSPCON1bits.CKP = 1; //release clock
         I2C_POINTER_FLAG = 0;
     }
 
+    SSPCON1bits.CKP = 1; //release clock
     PIR1bits.SSPIF = 0;     //Clear MSSP Interrupt flag
 }
     

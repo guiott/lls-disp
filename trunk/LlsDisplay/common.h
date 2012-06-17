@@ -8,7 +8,7 @@
 #ifndef Common_H
     #define Common_H
 
-    #define DEBUG_MODE
+//    #define DEBUG_MODE
 //    #define WATCH_DOG
 
     #include <p18f2620.h>
@@ -28,7 +28,7 @@
     //----- Macro
     #define ABS(x) ((x) > 0 ? (x) : -(x)) // ABS() for int, long, float...
 
-    #define I2C_ADDR 0X22
+    #define I2C_ADDR 0X44
     // State 1B flag. If set the following byte will be the register pointer
     #define I2C_POINTER_FLAG VARbits1.bit4
 
