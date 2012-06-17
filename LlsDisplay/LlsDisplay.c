@@ -1,7 +1,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
 ** File:      LlsDisplay.c
 
- * #define  Ver "LlsDisplay v.0.10\r      by Guiott"
+ * #define  Ver "LlsDisplay v.0.20\r      by Guiott"
 
 /**
 * \mainpage LlsDisplay.c
@@ -381,7 +381,7 @@ void InterruptHandlerHigh (void)
 #define STATE_MASK 0X2D        // to mask out unimportant bits in SSPSTAT
 #define BF_MASK 0X2C           // to mask out BF bit in SSPSTAT
 #define RW_MASK 0X28           // to mask out R/W bit in SSPSTAT
-#define MAX_TRY 100             // maximum number of retries for transmission
+#define MAX_TRY 100            // maximum number of retries for transmission
 //----------------------------------------------------------------------------*/
 unsigned char SspstatMsk;
 unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
@@ -445,6 +445,8 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
                 goto State3End; //too many collisions. Exit.
             }
         }
+        // insert here a fault flag if needed
+        // if here the buffer was never empty
 
         State3End:
         I2C_POINTER_FLAG = 0;
@@ -477,7 +479,9 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
                 goto State4End; //too many collisions. Exit.
             }
         }
-
+        // insert here a fault flag if needed
+        // if here the buffer was never empty
+        
         State4End:
         I2C_POINTER_FLAG = 0;
     }
