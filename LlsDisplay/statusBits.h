@@ -20,8 +20,4 @@
 #pragma config LVP = OFF
 #pragma config BOREN = OFF
 
-//#pragma config CCP2MX = PORTC   // CCP2 capture on pin RC1
-//#pragma config PWRT = ON not compatible with ICD2
-//#pragma config XINST = ON
-
 #endif
