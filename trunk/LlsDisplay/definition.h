@@ -87,11 +87,10 @@ unsigned char BlinkDot; // Dots blinking as an hearthbeat
 //I2C definitions
 #define I2C_BUFF_SIZE_RX 4
 // unsigned char I2cRegRx[I2C_BUFF_SIZE_RX];//registers array
-unsigned char I2cRegPtrRx;//Pointer to first byte to read or write in the register
+unsigned char I2cRegPtr;//Pointer to first byte to read or write in the register
 
 #define I2C_BUFF_SIZE_TX 4
-unsigned char I2cRegTx[I2C_BUFF_SIZE_TX];//registers array
-unsigned char I2cRegPtrTx;//Pointer to first byte to read or write in the register
+unsigned char I2cRegTx[I2C_BUFF_SIZE_TX]={41,42,43,44};//registers array
 #ifdef DEBUG_MODE
     unsigned char DispNum[4]={0,0,0,0};
 #else
