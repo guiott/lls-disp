@@ -1,12 +1,12 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
 ** File:      LlsDisplay.c
 
- * #define  Ver "LlsDisplay v.0.20\r      by Guiott"
+ * #define  Ver "LlsDisplay v.1.0.0\r      by Guiott"
 
 /**
 * \mainpage LlsDisplay.c
 * \author    Guido Ottaviani-->guido@guiott.com<--
-* \version 0.0.9
+* \version 1.0.0
 * \date 06/12
 * \details 
 *
@@ -404,19 +404,19 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
     {
         if(I2C_POINTER_FLAG)
         {//come from State 1B, the received data is the register pointer
-            I2cRegPtrRx = SSPBUF;
+            I2cRegPtr = SSPBUF;
             SSPCON1bits.CKP = 1; //release clock immediately to free up the bus
         }
         else
         {//the received data is a valid byte to store
-            DispNum[I2cRegPtrRx] = SSPBUF;
+            DispNum[I2cRegPtr] = SSPBUF;
             SSPCON1bits.CKP = 1; //release clock immediately to free up the bus
-            I2cRegPtrRx ++;
+            I2cRegPtr ++;
         }
         
-        if(I2cRegPtrRx >= I2C_BUFF_SIZE_RX)
+        if(I2cRegPtr >= I2C_BUFF_SIZE_RX)
         {
-            I2cRegPtrRx = I2C_BUFF_SIZE_RX - 1;
+            I2cRegPtr = I2C_BUFF_SIZE_RX - 1;
         }
         I2C_POINTER_FLAG = 0;
     }
@@ -424,7 +424,7 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
 //State 3------------------
     else if((SspstatMsk & BF_MASK) == STATE3)
     {//first reading from master after it sends address
-
+        I2cAddr = SSPBUF;  //dummy reading of the buffer to empty it
         for(i=0; i<MAX_TRY; i++)
         {//check MAX_TRY times if buffer is empty
             if(!SSPSTATbits.BF)
@@ -432,14 +432,14 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
                 for(j=0; j<MAX_TRY; j++)
                 {//check MAX_TRY times to avoid collisions
                     SSPCON1bits.WCOL=0; //reset collision flag
-                    SSPBUF = I2cRegTx[I2cRegPtrTx]; //send requested byte
+                    SSPBUF = I2cRegTx[I2cRegPtr]; //send requested byte
                     if(!SSPCON1bits.WCOL)
                     {/*if no collision, sending was OK, point to the next byte*/
                         SSPCON1bits.CKP = 1; //free up the bus
-                        I2cRegPtrTx ++;
-                        if(I2cRegPtrTx >= I2C_BUFF_SIZE_TX)
+                        I2cRegPtr ++;
+                        if(I2cRegPtr >= I2C_BUFF_SIZE_TX)
                         {
-                            I2cRegPtrTx = I2C_BUFF_SIZE_TX - 1;
+                            I2cRegPtr = I2C_BUFF_SIZE_TX - 1;
                         }
                         // insert here an OK flag if needed
                         goto State3End; //everything's fine. Procedure over
@@ -468,14 +468,14 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
                 for(j=0; j<MAX_TRY; j++)
                 {//check MAX_TRY times to avoid collisions
                     SSPCON1bits.WCOL=0; //reset collision flag
-                    SSPBUF = I2cRegTx[I2cRegPtrTx]; //send requested byte
+                    SSPBUF = I2cRegTx[I2cRegPtr]; //send requested byte
                     if(!SSPCON1bits.WCOL)
                     {/*if no collision, sending was OK, point to the next byte*/
                         SSPCON1bits.CKP = 1; //free up the bus
-                        I2cRegPtrTx ++;
-                        if(I2cRegPtrTx >= I2C_BUFF_SIZE_TX)
+                        I2cRegPtr ++;
+                        if(I2cRegPtr >= I2C_BUFF_SIZE_TX)
                         {
-                            I2cRegPtrTx = I2C_BUFF_SIZE_TX - 1;
+                            I2cRegPtr = I2C_BUFF_SIZE_TX - 1;
                         }
                         // insert here an OK flag if needed
                         goto State4End; //everything's fine. Procedure over
@@ -501,13 +501,13 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
 
 //Default------------------
     else
-    {//not in a know state. A different safety action could be performed here
+    {//not in a known state. A different safety action could be performed here
         SSPCON1bits.CKP = 1; //release clock
         I2C_POINTER_FLAG = 0;
     }
 
     SSPCON1bits.CKP = 1; //release clock
-    PIR1bits.SSPIF = 0;     //Clear MSSP Interrupt flag
+    PIR1bits.SSPIF = 0;  //Clear MSSP Interrupt flag
 }
     
 }   // High Priority IntServiceRoutine
