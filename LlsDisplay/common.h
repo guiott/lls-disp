@@ -28,7 +28,7 @@
     //----- Macro
     #define ABS(x) ((x) > 0 ? (x) : -(x)) // ABS() for int, long, float...
 
-    #define I2C_ADDR 0X44
+    #define I2C_ADDR 0X22
     // State 1B flag. If set the following byte will be the register pointer
     #define I2C_POINTER_FLAG VARbits1.bit4
 
