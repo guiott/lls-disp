@@ -60,13 +60,12 @@ TMR0L = Timer0Count;     // byte Low
 
 
 //------I2C
-SSPADD = I2C_ADDR;
+SSPADD = I2C_ADDR << 1; //Address shifted to the upper bits (7:1)
 SSPCON1bits.SSPEN = 1;  //Enable I2C on I/O pins
 SSPCON1bits.CKP = 1;    //Release clock
 SSPCON1bits.SSPM = 6;   //I2C Slave mode, 7-bit address
 SSPCON2bits.SEN = 1;    //Clock stretching enabled
 SSPSTATbits.SMP = 1;    //Standard speed mode
-SSPSTATbits.CKE = 1;    //Enable SMBus
 SSPBUF = 0;
 
 I2C_POINTER_FLAG = 0;   // reset State 1B

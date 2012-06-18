@@ -396,6 +396,7 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
       * byte will be the register pointer*/
         I2C_POINTER_FLAG = 1;   // go into the State 1B
         I2cAddr = SSPBUF;  //dummy reading of the buffer to empty it
+        SSPCON1bits.CKP = 1; //release clock immediately to free up the bus
     }
 
 //State 2------------------
@@ -404,10 +405,12 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
         if(I2C_POINTER_FLAG)
         {//come from State 1B, the received data is the register pointer
             I2cRegPtrRx = SSPBUF;
+            SSPCON1bits.CKP = 1; //release clock immediately to free up the bus
         }
         else
         {//the received data is a valid byte to store
             DispNum[I2cRegPtrRx] = SSPBUF;
+            SSPCON1bits.CKP = 1; //release clock immediately to free up the bus
             I2cRegPtrRx ++;
         }
         
@@ -432,6 +435,7 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
                     SSPBUF = I2cRegTx[I2cRegPtrTx]; //send requested byte
                     if(!SSPCON1bits.WCOL)
                     {/*if no collision, sending was OK, point to the next byte*/
+                        SSPCON1bits.CKP = 1; //free up the bus
                         I2cRegPtrTx ++;
                         if(I2cRegPtrTx >= I2C_BUFF_SIZE_TX)
                         {
@@ -467,6 +471,7 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
                     SSPBUF = I2cRegTx[I2cRegPtrTx]; //send requested byte
                     if(!SSPCON1bits.WCOL)
                     {/*if no collision, sending was OK, point to the next byte*/
+                        SSPCON1bits.CKP = 1; //free up the bus
                         I2cRegPtrTx ++;
                         if(I2cRegPtrTx >= I2C_BUFF_SIZE_TX)
                         {
