@@ -70,7 +70,7 @@ unsigned char Timer0CountHigh;
 #define  DISP_ON   0
 #define  DISP_OFF  1
 
-unsigned char BlinkFlag[4];
+unsigned char BlinkFlag[5];
 
 #define  TEST_BIT   LATBbits.LATB5
 
@@ -85,15 +85,15 @@ unsigned char BlinkDot; // Dots blinking as an hearthbeat
 #define LONG_TIMER 50 // 250 ms @ INT0 = 5 ms
 
 //I2C definitions
-#define I2C_BUFF_SIZE_RX 4
+#define I2C_BUFF_SIZE_RX 5
 // unsigned char I2cRegRx[I2C_BUFF_SIZE_RX];//registers array
 unsigned char I2cRegPtr;//Pointer to first byte to read or write in the register
 
-#define I2C_BUFF_SIZE_TX 4
-unsigned char I2cRegTx[I2C_BUFF_SIZE_TX]={41,42,43,44};//registers array
+#define I2C_BUFF_SIZE_TX 5
+unsigned char I2cRegTx[I2C_BUFF_SIZE_TX]={0,1,2,3,4};//registers array
 #ifdef DEBUG_MODE
-    unsigned char DispNum[4]={0,0,0,0};
+    unsigned char DispNum[4]={0,0,0,0,0};
 #else
-    unsigned char DispNum[4]={0X47,0X58,0X48,0X47};
+    unsigned char DispNum[5]={0X47,0X58,0X48,0X47,0X10};
 #endif
 #endif
