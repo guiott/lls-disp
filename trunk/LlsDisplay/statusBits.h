@@ -13,11 +13,13 @@
 
 #ifdef WATCH_DOG
     #pragma config WDT = ON
+    #pragma config WDTPS = 256 //1s
 #else
     #pragma config WDT = OFF
 #endif
 
 #pragma config LVP = OFF
-#pragma config BOREN = OFF
+#pragma config BOREN = SBORDIS
+#pragma config BORV = 1
 
 #endif

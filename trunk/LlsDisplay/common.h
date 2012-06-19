@@ -9,7 +9,7 @@
     #define Common_H
 
 //    #define DEBUG_MODE
-//    #define WATCH_DOG
+    #define WATCH_DOG
 
     #include <p18f2620.h>
 
