@@ -1,7 +1,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
 ** File:      LlsDisplay.c
 
- * #define  Ver "LlsDisplay v.1.0.0\r      by Guiott"
+ * #define  Ver "LlsDisplay v.1.1.0\r      by Guiott"
 
 /**
 * \mainpage LlsDisplay.c
@@ -98,7 +98,8 @@ void LongCycle(void)
   * 3 = fast blinking
   * 4 = CW/forward segments animation
   * 5 = CCW/backward segments animation
- *
+  *
+  * mode 0 - 3 are valide also for buzzer, lower nibble not used
  */
    static unsigned char Blink;
    int LP;
@@ -135,7 +136,7 @@ void LongCycle(void)
        Anim=0;
    }
 
-   for(LP=0; LP<=3; LP++)
+   for(LP=0; LP<=4; LP++)
    {
         DispMode=DispNum[LP]>>4;
         switch (DispMode)
@@ -176,6 +177,8 @@ void LongCycle(void)
         }
 
    }
+   BUZZER = BlinkFlag[4];
+  
  }
 
 
