@@ -81,19 +81,30 @@ const unsigned char DispAnim[8]={0XFE,0XFD,0XFB,0XF7,0XEF,0XDF,0XBF,0X7F};
 
 unsigned int LongTimer=0;
 unsigned char Anim=0;   // Display animation counting
-unsigned char BlinkDot; // Dots blinking as an hearthbeat
-#define LONG_TIMER 50 // 250 ms @ INT0 = 5 ms
+#define LONG_TIMER 50   // 250 ms @ INT0 = 5 ms
 
 //I2C definitions
-#define I2C_BUFF_SIZE_RX 5
-// unsigned char I2cRegRx[I2C_BUFF_SIZE_RX];//registers array
 unsigned char I2cRegPtr;//Pointer to first byte to read or write in the register
 
-#define I2C_BUFF_SIZE_TX 5
-unsigned char I2cRegTx[I2C_BUFF_SIZE_TX]={0,1,2,3,4};//registers array
+//TX registers array
+#define I2C_BUFF_SIZE_TX 6
+unsigned char I2cRegTx[I2C_BUFF_SIZE_TX]={0,1,2,3,4,5};//TX registers array
+
+/*RX registers array
+ * 0 = Left bar
+ * 1 = Left number
+ * 2 = Right number
+ * 3 = Right bar
+ * 4 = Up and Down arrows (segments 7-6 of left bar
+ * 5 = Buzzer
+*/
+
+#define I2C_BUFF_SIZE_RX 6
+
 #ifdef DEBUG_MODE
-    unsigned char DispNum[4]={0,0,0,0,0};
+    unsigned char I2cRegRx[I2C_BUFF_SIZE_RX]={0,0,0,0,0,0};
 #else
-    unsigned char DispNum[5]={0X47,0X58,0X48,0X47,0X10};
+    unsigned char I2cRegRx[I2C_BUFF_SIZE_RX]={0X45,0X58,0X48,0X45,0X03,0X10};
 #endif
+
 #endif

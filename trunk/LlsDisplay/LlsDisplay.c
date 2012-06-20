@@ -1,7 +1,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
 ** File:      LlsDisplay.c
 
- * #define  Ver "LlsDisplay v.1.1.0\r      by Guiott"
+ * #define  Ver "LlsDisplay v.1.2.0\r      by Guiott"
 
 /**
 * \mainpage LlsDisplay.c
@@ -90,7 +90,7 @@ void LongCycle(void)
 {/**
  *\brief slow changings. Drives the slow and fast blinks and other changings
   * on display.
-  * The High nibble of the display number to be shown, controls in which  mode
+  * The High nibble of the display number to be shown controls in which  mode
   * the Low nibble will be displayed:
   * 0 = steady ON
   * 1 = OFF
@@ -99,7 +99,7 @@ void LongCycle(void)
   * 4 = CW/forward segments animation
   * 5 = CCW/backward segments animation
   *
-  * mode 0 - 3 are valide also for buzzer, lower nibble not used
+  * mode 0 - 3 are valid also for buzzer, lower nibble not used
  */
    static unsigned char Blink;
    int LP;
@@ -110,20 +110,12 @@ void LongCycle(void)
    {
        Blink=0;
        SLOW_BLINK_FLAG = SLOW_BLINK_FLAG ^ 1;
-       if(BlinkDot==0)
-       {// Make left bar dots blinking as an hearthbeat
-           BlinkDot=1;
-       }
-       else
-       {
-           BlinkDot=0;
-       }
 
     #ifdef DEBUG_MODE
-        DispNum[0]++;
-        DispNum[1]++;
-        DispNum[2]++;
-        DispNum[3]++;
+        I2cRegRx[0]++;
+        I2cRegRx[1]++;
+        I2cRegRx[2]++;
+        I2cRegRx[3]++;
     #endif
    }
    
@@ -136,9 +128,9 @@ void LongCycle(void)
        Anim=0;
    }
 
-   for(LP=0; LP<=4; LP++)
+   for(LP=0; LP<=(I2C_BUFF_SIZE_RX-1); LP++)
    {
-        DispMode=DispNum[LP]>>4;
+        DispMode=I2cRegRx[LP]>>4;
         switch (DispMode)
         {
             case 0:
@@ -177,7 +169,7 @@ void LongCycle(void)
         }
 
    }
-   BUZZER = BlinkFlag[4];
+   BUZZER = BlinkFlag[5];
   
  }
 
@@ -185,6 +177,10 @@ void LongCycle(void)
 void Cycle()
 {/**
  *\brief cycle the number to display to perform multiplexing
+  * Digit 0 = Left bar first 5 segments, up and down arrow segments 6-7
+  * Digit 1 = Left number 7 segmants
+  * Digit 2 = Right number 7 segmants
+  * Digit 3 = Right bar first 5 segments
  *
  */
    TIMER0_FLAG=0;
@@ -209,9 +205,9 @@ void Cycle()
           }
           else
           {
-            PORTA=DispBar[(DispNum[0]&0X07)];
-            LATAbits.LATA5=BlinkDot;
-            LATAbits.LATA6=BlinkDot;
+            PORTA=DispBar[(I2cRegRx[0]&0X07)];      //first 5 segments
+            LATAbits.LATA5=I2cRegRx[4] & 0X01;      //down arrow
+            LATAbits.LATA6=(I2cRegRx[4]>>1) & 0X01; //up arrow
             BAR_L = BlinkFlag[0];
           }
             break;
@@ -229,7 +225,7 @@ void Cycle()
           }
           else
           {
-            PORTA=DispSeg[DispNum[1]&0X0F];
+            PORTA=DispSeg[I2cRegRx[1]&0X0F];
             DISP_L = BlinkFlag[1];
           }
             break;
@@ -247,7 +243,7 @@ void Cycle()
           }
           else
           {
-            PORTA=DispSeg[DispNum[2]&0X0F];
+            PORTA=DispSeg[I2cRegRx[2]&0X0F];
             DISP_R = BlinkFlag[2];
           }
             break;
@@ -265,7 +261,7 @@ void Cycle()
           }
           else
           {
-            PORTA=DispBar[DispNum[3]&0X07];
+            PORTA=DispBar[I2cRegRx[3]&0X07];//first 5 segments
             BAR_R = BlinkFlag[3];
           }
             break;
@@ -412,7 +408,7 @@ unsigned char I2cAddr; //to perform dummy reading of the SSPBUFF
         }
         else
         {//the received data is a valid byte to store
-            DispNum[I2cRegPtr] = SSPBUF;
+            I2cRegRx[I2cRegPtr] = SSPBUF;
             SSPCON1bits.CKP = 1; //release clock immediately to free up the bus
             I2cRegPtr ++;
         }
