@@ -1,0 +1,1 @@
+This is the code inside the PIC18F2620 that displays data sent from Low Level Supervisor (http://www.guiott.com/Lino/LLS/LLS.htm) to the display. On this page details and schematics: http://www.guiott.com/Lino/Display/Display.htm
