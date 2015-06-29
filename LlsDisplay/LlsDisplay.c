@@ -1,13 +1,13 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
 ** File:      LlsDisplay.c
 
- * #define  Ver "LlsDisplay v.1.2.0\r      by Guiott"
+ * #define  Ver "LlsDisplay v.1.3.0\r      by Guiott"
 
 /**
 * \mainpage LlsDisplay.c
 * \author    Guido Ottaviani-->guido@guiott.com<--
-* \version 1.2.0
-* \date 06/12
+* \version 1.3.0
+* \date 06/15
 * \details 
 *
 *
@@ -178,8 +178,8 @@ void Cycle()
 {/**
  *\brief cycle the number to display to perform multiplexing
   * Digit 0 = Left bar first 5 segments, up and down arrow segments 6-7
-  * Digit 1 = Left number 7 segmants
-  * Digit 2 = Right number 7 segmants
+  * Digit 1 = Left number 7 segments
+  * Digit 2 = Right number 7 segments
   * Digit 3 = Right bar first 5 segments
  *
  */
@@ -278,30 +278,7 @@ void Cycle()
     }
 }
 
-
-/*===========================================================================*/
-
-// Low priority interrupt vector
-
-#pragma code LowVector = 0x18
-void InterruptVectorLow (void)
-{
-  _asm
-    goto InterruptHandlerLow //jump to interrupt routine
-  _endasm
-}
-
-//----------------------------------------------------------------------------
-// Low priority interrupt routine
-
-#pragma code
-#pragma interruptlow InterruptHandlerLow
-
-/*===========================================================================*/
-
-/*IntServiceRoutine***********************************************************/
-void InterruptHandlerLow (void)
-
+void interrupt low_priority low_isr(void)
 {
  if (INTCONbits.TMR0IF)   // timer 0 overflow?
  {
@@ -321,31 +298,7 @@ void InterruptHandlerLow (void)
 }   // Low Priority IntServiceRoutine
 /*****************************************************************************/
 
-
-/*===========================================================================*/
-// High priority interrupt vector
-
-#pragma code HighVector = 0x08
-void
-InterruptVectorHigh (void)
-{
-  _asm
-    goto InterruptHandlerHigh //jump to interrupt routine
-  _endasm
-}
-
-//----------------------------------------------------------------------------
-// High priority interrupt routine
-
-#pragma code
-#pragma interrupt InterruptHandlerHigh
-
-/*===========================================================================*/
-
-
-/*IntServiceRoutine***********************************************************/
-void InterruptHandlerHigh (void)
-
+void interrupt high_isr(void)
 {      
 /*----This is a porting of assembly code for Microchip AN734-------------------
  * over the I2C protocol it was added a 24Cxx EEPROM like data exchange mode.

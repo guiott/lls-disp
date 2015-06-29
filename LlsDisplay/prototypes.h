@@ -11,8 +11,6 @@
 /*Prototypes*******************************************************************/
 
 void Settings(void);
-void InterruptHandlerHigh (void);
-void InterruptHandlerLow (void);
 void Cycle(void);
 void LongCycle(void);
 

@@ -70,7 +70,7 @@ unsigned char Timer0CountHigh;
 #define  DISP_ON   0
 #define  DISP_OFF  1
 
-unsigned char BlinkFlag[5];
+unsigned char BlinkFlag[6];
 
 #define  TEST_BIT   LATBbits.LATB5
 

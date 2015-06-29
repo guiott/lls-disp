@@ -11,7 +11,8 @@
 //    #define DEBUG_MODE
     #define WATCH_DOG
 
-    #include <p18f2620.h>
+    //#include <p18f2620.h>
+    #include <p18cxxx.h>
 
     #define XTAL_FREQ  32000000     //internal oscillator frequency * 4
     #define PRESCALER0 8            //TIMER0 selected prescaler
